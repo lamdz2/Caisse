@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Caisse Livreurs</title>
+<meta name="theme-color" content="#1d241f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Caisse">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{
+  --bg:#f3f2ec; --surface:#ffffff; --ink:#1d241f; --muted:#5f6a62; --line:#dcdcd2;
+  --mustard:#e2a614; --mustard-ink:#3a2a00; --mustard-soft:#fbefc8;
+  --ok:#1f7a4a; --ok-soft:#dcf1e4; --bad:#c2321f; --bad-soft:#fbe1dc; --info:#1d5f9a; --info-soft:#dde9f5;
+  --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",ui-sans-serif,system-ui,sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --r:14px; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#121614; --surface:#1b211e; --ink:#eef0ea; --muted:#a3ada6; --line:#2e3631;
+  --mustard:#f0b72a; --mustard-ink:#241a00; --mustard-soft:#3a3010;
+  --ok:#5fcf8f; --ok-soft:#173326; --bad:#ff7b66; --bad-soft:#3d1c17; --info:#7db6ec; --info-soft:#17293b;
+  color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--bg);margin:0}
+body{color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45;padding-inline:16px;padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(96px + env(safe-area-inset-bottom,0px));-webkit-tap-highlight-color:transparent}
+.wrap{max-width:560px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;cursor:pointer}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--mustard);outline-offset:2px}
+a{color:var(--info)}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);padding-block:14px 10px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header.top h1{font-size:1.4rem;font-weight:800;letter-spacing:-.01em}
+header.top h1 span{color:var(--mustard)}
+.sub{font-size:.85rem;color:var(--muted)}
+.eyebrow{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.between{justify-content:space-between}
+.btn{border:0;border-radius:12px;padding:14px 16px;font-weight:700;font-size:1rem;text-align:center;text-decoration:none;display:inline-block}
+.btn-main{background:var(--mustard);color:var(--mustard-ink);width:100%}
+.btn-dark{background:var(--ink);color:var(--bg);width:100%}
+.btn-ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn-danger{background:var(--bad-soft);color:var(--bad)}
+.btn-sm{padding:9px 12px;font-size:.9rem;border-radius:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.card.alert{border-color:var(--mustard);box-shadow:0 0 0 2px var(--mustard-soft)}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:.8rem;font-weight:700;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.info{background:var(--info-soft);color:var(--info)}
+.pill.road{background:var(--mustard-soft);color:var(--ink)}
+.pill.grey{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.empty{text-align:center;color:var(--muted);padding:28px 12px;border:2px dashed var(--line);border-radius:var(--r)}
+.empty strong{display:block;color:var(--ink);font-family:var(--f-display);font-size:1.1rem;margin-bottom:4px}
+.meta{color:var(--muted);font-size:.88rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:3px 8px;font-size:.85rem}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs button{border:0;background:none;padding:10px 4px 12px;font-weight:700;font-size:.85rem;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button[aria-current="page"]{color:var(--ink)}
+nav.tabs button[aria-current="page"] svg{color:var(--mustard)}
+.dot{position:absolute;top:6px;left:calc(50% + 8px);min-width:18px;height:18px;border-radius:9px;background:var(--bad);color:#fff;font-size:.7rem;display:grid;place-items:center;padding:0 5px}
+.sheet{position:fixed;inset:0;z-index:10;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;padding-inline:16px;padding-top:calc(env(safe-area-inset-top,0px) + 12px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 32px)}
+.sheet-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sheet-head h2{font-size:1.25rem;flex:1;min-width:0}
+.back{border:1px solid var(--line);background:var(--surface);border-radius:10px;width:42px;height:42px;display:grid;place-items:center;flex:none}
+label.field{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:.95rem}
+input[type=text],input[type=number],input[type=password],input[type=email],input[type=tel],select,textarea{font:inherit;font-size:1.05rem;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:12px;width:100%;min-width:0}
+textarea{min-height:76px;resize:vertical}
+.money{position:relative}
+.money input{padding-right:34px;font-family:var(--f-num)}
+.money::after{content:"€";position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700}
+.hint{font-size:.85rem;color:var(--muted);font-weight:400}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 14px;font-weight:700}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.plist{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.pcat{padding:8px 14px;background:var(--bg);border-bottom:1px solid var(--line)}
+.prow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+.prow:last-child{border-bottom:0}
+.prow.col{grid-template-columns:1fr}
+.pn{min-width:0;font-weight:700}
+.ps{font-size:.82rem;color:var(--muted);font-weight:400}
+.step{display:flex;align-items:center;gap:4px;flex:none}
+.step button{width:40px;height:40px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);font-size:1.3rem;font-weight:700;line-height:1}
+.step input{width:56px;text-align:center;padding:8px 4px;font-family:var(--f-num);font-weight:700}
+.line{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.line .lab{font-size:.88rem;color:var(--muted);font-weight:700}
+.diff{font-size:.8rem;color:var(--bad);font-weight:700}
+.warn{color:var(--bad)}
+.receipt{background:var(--surface);border-radius:6px;padding:18px 16px;position:relative;font-family:var(--f-num);font-size:.88rem;margin-block:10px}
+.receipt::before,.receipt::after{content:"";position:absolute;left:0;right:0;height:10px;background:radial-gradient(circle at 6px 0,transparent 6px,var(--surface) 6.5px) repeat-x;background-size:12px 10px}
+.receipt::before{top:-10px;transform:rotate(180deg)}
+.receipt::after{bottom:-10px}
+.receipt h3{font-family:var(--f-display);font-size:1.1rem;text-align:center}
+.receipt .c{text-align:center;color:var(--muted);font-size:.8rem}
+.rl{display:flex;justify-content:space-between;gap:10px;padding:3px 0}
+.rl span:first-child{min-width:0}
+.rl.strong{font-weight:700;font-size:.98rem}
+.rl.small{color:var(--muted);font-size:.8rem}
+.cut{border-top:1.5px dashed var(--line);margin:10px 0}
+.verdict{margin-top:12px;border-radius:10px;padding:12px;text-align:center;font-family:var(--f-display);font-weight:800;font-size:1.2rem}
+.verdict.ok{background:var(--ok-soft);color:var(--ok)}
+.verdict.bad{background:var(--bad-soft);color:var(--bad)}
+.verdict.info{background:var(--info-soft);color:var(--info)}
+.verdict small{display:block;font-family:var(--f-body);font-weight:400;font-size:.85rem;margin-top:2px}
+.sumgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.stat .v{font-family:var(--f-num);font-weight:700;font-size:1.15rem}
+.stat .k{font-size:.8rem;color:var(--muted)}
+.tablebox{overflow-x:auto}
+table.t{width:100%;border-collapse:collapse;font-size:.9rem}
+table.t th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:6px 4px;border-bottom:1px solid var(--line)}
+table.t td{padding:9px 4px;border-bottom:1px solid var(--line)}
+table.t .n{text-align:right;font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+.listbtn{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;text-align:left;width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px}
+.order{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface)}
+.order .addr{font-weight:700;font-size:1.05rem;word-break:break-word}
+.order.new{border-color:var(--mustard);box-shadow:0 0 0 2px var(--mustard-soft)}
+.mini{display:flex;justify-content:space-between;gap:8px;font-size:.88rem;padding:6px 0;border-top:1px solid var(--line)}
+.mini span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.setrow{display:grid;grid-template-columns:1fr 92px 40px;gap:8px;align-items:center}
+.icon-btn{width:40px;height:46px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--bad);font-weight:700}
+.toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:700;z-index:30;max-width:calc(100% - 32px);text-align:center}
+.photo{width:100%;border-radius:10px;border:1px solid var(--line)}
+.login{max-width:420px;margin:0 auto;padding-top:10vh}
+.brand{font-family:var(--f-display);font-weight:800;font-size:2.2rem;line-height:1.05;letter-spacing:-.02em}
+.brand span{color:var(--mustard)}
+.err{background:var(--bad-soft);color:var(--bad);border-radius:10px;padding:10px 12px;font-size:.9rem}
+.linkbtn{background:none;border:0;color:var(--info);font-weight:700;padding:6px 0;text-decoration:underline}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(16px);opacity:.6}to{transform:none;opacity:1}}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top" id="top" hidden>
+    <div><h1>Caisse <span>Livreurs</span></h1><div class="sub" id="whoLbl"></div></div>
+    <button class="btn btn-ghost btn-sm" data-act="logout">Quitter</button>
+  </header>
+  <main id="view"><div class="empty" style="margin-top:30vh"><strong>Chargement…</strong></div></main>
+</div>
+<nav class="tabs" id="tabs" hidden aria-label="Sections">
+  <button data-tab="live" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>Direct<span class="dot" id="liveDot" hidden></span></button>
+  <button data-tab="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>Bilans</button>
+  <button data-tab="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Réglages</button>
+</nav>
+<div id="sheet" class="sheet" hidden></div>
+<div id="toast" class="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script>
+(function(){
+"use strict";
+const SB_URL="https://giqbjliquzkciocqvqwq.supabase.co";
+const SB_KEY="sb_publishable_YvxS4ybB_algbgqWFcGd7w_Eby2-eg6";
+const DRV_DOMAIN="livreurs.caisse-app.fr";
+const CATS=["Tacos","Burgers","Wraps","Snacks","Boissons","Autre"];
+const sb=supabase.createClient(SB_URL,SB_KEY);
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const eur=n=>(Math.round((+n||0)*100)/100).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
+const num=v=>{const n=parseFloat(String(v??"").replace(",","."));return isFinite(n)?n:0};
+const int=v=>Math.max(0,Math.floor(num(v)));
+const dayKey=d=>{const x=new Date(d);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
+const fmtDay=k=>new Date(k+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"});
+const fmtTime=t=>t?new Date(t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}):"";
+const uuid=()=>(crypto.randomUUID?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==="x"?r:(r&3|8)).toString(16)}));
+let toastT;function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,2600)}
+function errMsg(e){const m=(e&&(e.message||e.error_description))||"";
+  if(/Invalid login/i.test(m))return"Identifiant ou mot de passe incorrect.";
+  if(/already registered|already been registered/i.test(m))return"Ce compte existe déjà.";
+  if(/Password should be/i.test(m))return"Le mot de passe doit faire au moins 6 caractères.";
+  if(/Failed to fetch|NetworkError|network/i.test(m))return"Pas de connexion internet. Réessaie.";
+  return m||"Une erreur est survenue. Réessaie.";}
+function buzz(){try{navigator.vibrate&&navigator.vibrate([120,60,120])}catch(e){}}
+const toEmail=id=>{id=String(id||"").trim().toLowerCase();return id.includes("@")?id:id+"@"+DRV_DOMAIN};
+
+/* ---------- state ---------- */
+let me=null, tab="live", period="day";
+let S={products:[],drivers:[],trips:[],prices:{},orders:[]};
+let form=null, draft=null, channel=null, reloadT=null, seenOrders=new Set(), seenDecl=new Set(), firstLoad=true;
+const sheet=$("#sheet");
+
+/* ---------- auth ---------- */
+async function boot(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(session)await enter(session.user);else showLogin();
+  sb.auth.onAuthStateChange((ev,s)=>{if(ev==="SIGNED_OUT"){me=null;cleanup();showLogin()}});
+}
+async function enter(user){
+  const {data,error}=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();
+  if(error||!data){showBlocked("Ton compte n'est pas encore prêt. Réessaie dans un instant.");return}
+  if(!data.active){showBlocked("Ton accès n'est pas actif. Demande au patron de l'activer.");return}
+  me=data;$("#top").hidden=false;$("#whoLbl").textContent=(me.role==="owner"?"Patron":"Livreur")+" · "+(me.name||"");
+  $("#tabs").hidden=me.role!=="owner";
+  firstLoad=true;await reload();subscribe();
+}
+function cleanup(){if(channel){sb.removeChannel(channel);channel=null}closeSheet();$("#top").hidden=true;$("#tabs").hidden=true;S={products:[],drivers:[],trips:[],prices:{},orders:[]}}
+function showBlocked(msg){$("#top").hidden=true;$("#tabs").hidden=true;
+  $("#view").innerHTML=`<div class="login stack"><div class="brand">Caisse <span>Livreurs</span></div><div class="err">${esc(msg)}</div><button class="btn btn-ghost" data-act="logout">Se déconnecter</button></div>`}
+function showLogin(signup){
+  $("#top").hidden=true;$("#tabs").hidden=true;
+  $("#view").innerHTML=signup?`<form class="login stack" id="signupForm">
+    <div class="brand">Caisse <span>Livreurs</span></div>
+    <div class="hint">Création du compte patron. À faire une seule fois : le premier compte créé devient le patron.</div>
+    <label class="field">Ton prénom<input type="text" id="suName" autocomplete="name" required></label>
+    <label class="field">E-mail<input type="email" id="suEmail" autocomplete="email" required></label>
+    <label class="field">Mot de passe (6 caractères minimum)<input type="password" id="suPw" autocomplete="new-password" minlength="6" required></label>
+    <div id="loginErr" class="err" hidden></div>
+    <button class="btn btn-main" type="submit">Créer le compte patron</button>
+    <button class="linkbtn" type="button" data-act="showlogin">J'ai déjà un compte</button></form>`
+  :`<form class="login stack" id="loginForm">
+    <div class="brand">Caisse <span>Livreurs</span></div>
+    <label class="field">Identifiant<input type="text" id="liId" autocomplete="username" autocapitalize="none" autocorrect="off" placeholder="Ton identifiant ou e-mail" required></label>
+    <label class="field">Mot de passe<input type="password" id="liPw" autocomplete="current-password" required></label>
+    <div id="loginErr" class="err" hidden></div>
+    <button class="btn btn-main" type="submit">Se connecter</button>
+    <button class="linkbtn" type="button" data-act="showsignup">Première utilisation : créer le compte patron</button></form>`;
+}
+document.addEventListener("submit",async e=>{
+  const f=e.target;if(f.id!=="loginForm"&&f.id!=="signupForm")return;e.preventDefault();
+  const b=f.querySelector("button[type=submit]");b.disabled=true;const er=$("#loginErr");er.hidden=true;
+  try{
+    if(f.id==="loginForm"){
+      const {data,error}=await sb.auth.signInWithPassword({email:toEmail($("#liId").value),password:$("#liPw").value});
+      if(error)throw error;await enter(data.user);
+    }else{
+      const {data,error}=await sb.auth.signUp({email:$("#suEmail").value.trim(),password:$("#suPw").value,options:{data:{name:$("#suName").value.trim()}}});
+      if(error)throw error;
+      if(!data.session){er.textContent="Compte créé, mais la confirmation par e-mail est encore activée dans Supabase. Désactive « Confirm email » puis connecte-toi.";er.hidden=false;b.disabled=false;return}
+      await enter(data.user);
+    }
+  }catch(x){er.textContent=errMsg(x);er.hidden=false;b.disabled=false}
+});
+
+/* ---------- data ---------- */
+async function reload(){
+  if(!me)return;
+  try{
+    if(me.role==="owner"){
+      const since=new Date();since.setDate(since.getDate()-120);
+      const [p,d,t,pr,o]=await Promise.all([
+        sb.from("products").select("*").order("sort").order("name"),
+        sb.from("profiles").select("*").eq("role","driver").order("created_at"),
+        sb.from("trips").select("*").gte("started_at",since.toISOString()).order("started_at",{ascending:false}).limit(1000),
+        sb.from("trip_prices").select("*").limit(1000),
+        sb.from("orders").select("*").gte("created_at",since.toISOString()).order("created_at",{ascending:false}).limit(2000)]);
+      for(const r of [p,d,t,pr,o])if(r.error)throw r.error;
+      S.products=p.data;S.drivers=d.data;S.trips=t.data;S.orders=o.data;
+      S.prices={};for(const x of pr.data)S.prices[x.trip_id]=x.prices||{};
+      const declared=S.trips.filter(x=>x.status==="declared");
+      if(!firstLoad&&declared.some(x=>!seenDecl.has(x.id))){buzz();toast("Nouvelle déclaration à valider")}
+      declared.forEach(x=>seenDecl.add(x.id));
+    }else{
+      const t=await sb.from("trips").select("*").in("status",["open","declared"]).order("started_at",{ascending:false}).limit(3);
+      if(t.error)throw t.error;S.trips=t.data;
+      const ids=S.trips.map(x=>x.id);
+      if(ids.length){const o=await sb.from("orders").select("*").in("trip_id",ids).order("created_at");if(o.error)throw o.error;S.orders=o.data}else S.orders=[];
+      const fresh=S.orders.filter(x=>x.status==="sent"&&!seenOrders.has(x.id));
+      if(!firstLoad&&fresh.length){buzz();toast("Nouvelle adresse à livrer")}
+      S.orders.forEach(x=>seenOrders.add(x.id));
+    }
+    firstLoad=false;
+  }catch(e){toast(errMsg(e))}
+  render();
+}
+function subscribe(){
+  if(channel)sb.removeChannel(channel);
+  const on=()=>{clearTimeout(reloadT);reloadT=setTimeout(()=>{if(!form)reload();else reloadQuiet()},400)};
+  channel=sb.channel("live-"+me.id)
+    .on("postgres_changes",{event:"*",schema:"public",table:"orders"},on)
+    .on("postgres_changes",{event:"*",schema:"public",table:"trips"},on)
+    .subscribe();
+}
+async function reloadQuiet(){const f=form;const html=sheet.hidden?null:true;await reload();form=f;if(html&&form&&form.redraw)form.redraw()}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&me&&!form)reload()});
+
+/* ---------- calculations ---------- */
+function counts(t){return t.final||t.decl||{}}
+function calc(t,src){
+  src=src||counts(t);const prices=S.prices[t.id]||{};
+  const lines=[];let expected=0,lostVal=0,persoVal=0;
+  for(const it of (t.items||[])){
+    const out=int(it.out),back=int((src.back||{})[it.pid]),lost=int((src.lost||{})[it.pid]),perso=int((src.perso||{})[it.pid]);
+    const price=num(prices[it.pid]);const sold=out-back-lost-perso;
+    lines.push({pid:it.pid,name:it.name,price,out,back,lost,perso,sold,val:sold*price});
+    expected+=sold*price;lostVal+=lost*price;persoVal+=perso*price;
+  }
+  const cashNet=num(src.cash)-num(t.fond);
+  const card=(num(src.sumup_mid)-num(t.sumup_start))+num(src.sumup_end);
+  const real=cashNet+card;const ecart=Math.round((real-expected)*100)/100;
+  const ords=S.orders.filter(o=>o.trip_id===t.id&&o.status==="delivered");
+  const delCash=ords.filter(o=>o.pay==="cash").reduce((s,o)=>s+num(o.amount),0);
+  const delCard=ords.filter(o=>o.pay==="card").reduce((s,o)=>s+num(o.amount),0);
+  return{lines,expected,lostVal,persoVal,cashNet,card,real,ecart,bad:lines.some(l=>l.sold<0),dels:ords.length,delCash,delCard,delTotal:delCash+delCard};
+}
+function verdict(e){
+  if(Math.abs(e)<0.5)return{cls:"ok",txt:"Caisse juste",sub:"L'argent correspond au stock vendu."};
+  if(e<0)return{cls:"bad",txt:"Manque "+eur(-e),sub:"Il manque de l'argent par rapport au stock vendu."};
+  return{cls:"info",txt:"Surplus "+eur(e),sub:"Plus d'argent que prévu : vérifie les prix ou un oubli de stock."};
+}
+const pillFor=e=>{const v=verdict(e);return`<span class="pill ${v.cls}">${esc(v.cls==="ok"?"Juste":v.txt)}</span>`};
+const orderPill=o=>o.status==="sent"?`<span class="pill grey">Envoyée</span>`:o.status==="seen"?`<span class="pill road">Vue · en route</span>`:o.status==="delivered"?`<span class="pill ok">Livrée · ${eur(o.amount)} ${o.pay==="card"?"CB":"esp."}</span>`:`<span class="pill bad">Annulée</span>`;
+
+/* ---------- rendering ---------- */
+function render(){
+  if(!me)return;
+  if(me.role==="driver"){
+    let keep=null;if(form&&form.type==="deliver"){const a=document.getElementById("amt_"+form.oid);keep={oid:form.oid,pay:form.pay,amt:a?a.value:""}}
+    $("#view").innerHTML=viewDriver();
+    if(keep&&document.getElementById("dl_"+keep.oid)){openDeliverInline(keep.oid);form.pay=keep.pay;const a=document.getElementById("amt_"+keep.oid);if(a)a.value=keep.amt;document.querySelectorAll("[data-pay]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.pay===keep.pay))}
+    else if(keep)form=null;
+    return}
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-current",b.dataset.tab===tab?"page":"false"));
+  const nDecl=S.trips.filter(t=>t.status==="declared").length;const dot=$("#liveDot");dot.hidden=!nDecl;dot.textContent=nDecl;
+  $("#view").innerHTML=tab==="live"?viewLive():tab==="hist"?viewHist():viewSet();
+}
+
+/* ===== OWNER: live ===== */
+function viewLive(){
+  const activeDrivers=S.drivers.filter(d=>d.active);
+  if(!S.products.length||!activeDrivers.length)return`<div class="empty"><strong>Commence par les réglages</strong>Ajoute tes produits et crée les comptes de tes livreurs.<div style="margin-top:14px"><button class="btn btn-main" data-tab-go="set">Ouvrir les réglages</button></div></div>`;
+  const decl=S.trips.filter(t=>t.status==="declared");
+  const open=S.trips.filter(t=>t.status==="open").sort((a,b)=>new Date(a.started_at)-new Date(b.started_at));
+  const today=S.trips.filter(t=>t.status==="closed"&&t.day===dayKey(Date.now()));
+  let h=`<div class="stack"><button class="btn btn-main" data-act="depart">+ Nouveau départ</button>`;
+  if(decl.length){h+=`<div class="eyebrow">À valider</div>`;
+    for(const t of decl)h+=`<div class="card alert stack" style="gap:8px"><div class="row between"><h3>${esc(t.driver_name)}</h3><span class="pill road">Déclaration reçue</span></div>
+      <div class="meta">Parti à ${fmtTime(t.started_at)} · déclaration envoyée à ${fmtTime(t.declared_at)}</div>
+      <button class="btn btn-dark" data-act="validate" data-id="${t.id}">Vérifier et valider</button></div>`}
+  h+=`<div class="row between"><span class="eyebrow">Sur la route</span><span class="eyebrow">${open.length}</span></div>`;
+  if(!open.length)h+=`<div class="empty"><strong>Personne sur la route</strong>Appuie sur « Nouveau départ » quand tu donnes du stock à un livreur.</div>`;
+  for(const t of open){
+    const total=(t.items||[]).reduce((s,i)=>s+int(i.out),0);
+    const ords=S.orders.filter(o=>o.trip_id===t.id&&o.status!=="cancelled");
+    h+=`<div class="card stack" style="gap:8px">
+      <div class="row between"><h3>${esc(t.driver_name)}</h3><span class="pill road">En route</span></div>
+      <div class="meta">Parti à ${fmtTime(t.started_at)} · ${total} articles · fond ${eur(t.fond)} · SumUp départ ${eur(t.sumup_start)}</div>
+      <div class="chips">${(t.items||[]).filter(i=>int(i.out)).map(i=>`<span class="chip"><b class="num">${int(i.out)}</b> ${esc(i.name)}</span>`).join("")}</div>
+      ${ords.length?`<div>${ords.map(o=>`<div class="mini"><span>${esc(o.address)}</span>${orderPill(o)}</div>`).join("")}</div>`:""}
+      <div class="row"><button class="btn btn-ghost btn-sm" style="flex:1" data-act="order" data-id="${t.id}">+ Envoyer une adresse</button><button class="btn btn-ghost btn-sm" style="flex:1" data-act="detail" data-id="${t.id}">Détails</button></div>
+    </div>`}
+  if(today.length){h+=`<div class="eyebrow" style="margin-top:6px">Clôturées aujourd'hui</div>`;
+    for(const t of today.sort((a,b)=>new Date(b.closed_at)-new Date(a.closed_at))){const c=calc(t);
+      h+=`<button class="listbtn" data-act="ticket" data-id="${t.id}"><div><b>${esc(t.driver_name)}</b><div class="meta">Clôturée à ${fmtTime(t.closed_at)} · encaissé <span class="num">${eur(c.real)}</span></div></div>${pillFor(c.ecart)}</button>`}}
+  return h+`</div>`;
+}
+
+/* ===== OWNER: history ===== */
+function inPeriod(t){const now=new Date();
+  if(period==="day")return t.day===dayKey(now);
+  if(period==="yday"){const y=new Date();y.setDate(y.getDate()-1);return t.day===dayKey(y)}
+  if(period==="week"){const s=new Date();s.setDate(s.getDate()-6);return t.day>=dayKey(s)}
+  if(period==="month"){const d=new Date(t.day+"T12:00:00");return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}
+  return true}
+const PERIODS=[["day","Aujourd'hui"],["yday","Hier"],["week","7 jours"],["month","Ce mois"],["all","Tout"]];
+function viewHist(){
+  const closed=S.trips.filter(t=>t.status==="closed"&&inPeriod(t)).sort((a,b)=>new Date(b.closed_at)-new Date(a.closed_at));
+  let h=`<div class="stack"><div class="seg">${PERIODS.map(([k,l])=>`<button data-period="${k}" aria-pressed="${period===k}">${l}</button>`).join("")}</div>`;
+  if(!closed.length)return h+`<div class="empty"><strong>Aucune tournée clôturée sur cette période</strong>Les bilans apparaissent ici quand tu valides le retour d'un livreur.</div></div>`;
+  const A=agg(closed);const v=verdict(A.ecart);
+  h+=`<div class="verdict ${v.cls}">${esc(v.txt)}<small>Écart total sur ${closed.length} tournée${closed.length>1?"s":""}</small></div>
+  <div class="sumgrid">
+    <div class="stat"><div class="k">Ventes attendues</div><div class="v">${eur(A.exp)}</div></div>
+    <div class="stat"><div class="k">Argent encaissé</div><div class="v">${eur(A.real)}</div></div>
+    <div class="stat"><div class="k">dont espèces</div><div class="v">${eur(A.cash)}</div></div>
+    <div class="stat"><div class="k">dont SumUp</div><div class="v">${eur(A.card)}</div></div>
+    <div class="stat"><div class="k">Livraisons (${A.dels})</div><div class="v">${eur(A.delTotal)}</div></div>
+    <div class="stat"><div class="k">Perdu · perso</div><div class="v">${eur(A.lost+A.perso)}</div></div>
+  </div>
+  <button class="btn btn-ghost" data-act="pdfperiod">Télécharger le bilan PDF</button>
+  <div class="card"><div class="eyebrow" style="margin-bottom:6px">Par livreur</div><div class="tablebox"><table class="t"><thead><tr><th>Livreur</th><th class="n">Tourn.</th><th class="n">Attendu</th><th class="n">Écart</th></tr></thead><tbody>
+  ${Object.entries(A.by).sort((a,b)=>a[1].ec-b[1].ec).map(([n,b])=>`<tr><td>${esc(n)}</td><td class="n">${b.n}</td><td class="n">${eur(b.exp)}</td><td class="n" style="color:var(--${Math.abs(b.ec)<.5?"ok":b.ec<0?"bad":"info"})">${b.ec>0?"+":""}${eur(b.ec)}</td></tr>`).join("")}
+  </tbody></table></div></div><div class="eyebrow">Détail des tournées</div>`;
+  for(const t of closed){const c=calc(t);
+    h+=`<button class="listbtn" data-act="ticket" data-id="${t.id}"><div><b>${esc(t.driver_name)}</b><div class="meta">${fmtDay(t.day)} · ${fmtTime(t.started_at)}–${fmtTime(t.closed_at)} · attendu <span class="num">${eur(c.expected)}</span></div></div>${pillFor(c.ecart)}</button>`}
+  return h+`</div>`;
+}
+function agg(list){const A={exp:0,real:0,cash:0,card:0,lost:0,perso:0,dels:0,delTotal:0,delCash:0,delCard:0,by:{}};
+  for(const t of list){const c=calc(t);A.exp+=c.expected;A.real+=c.real;A.cash+=c.cashNet;A.card+=c.card;A.lost+=c.lostVal;A.perso+=c.persoVal;A.dels+=c.dels;A.delTotal+=c.delTotal;A.delCash+=c.delCash;A.delCard+=c.delCard;
+    const b=A.by[t.driver_name]||(A.by[t.driver_name]={n:0,exp:0,real:0,cash:0,card:0,lost:0,perso:0,ec:0,dels:0});b.n++;b.exp+=c.expected;b.real+=c.real;b.cash+=c.cashNet;b.card+=c.card;b.lost+=c.lostVal;b.perso+=c.persoVal;b.ec+=c.ecart;b.dels+=c.delTotal}
+  A.ecart=Math.round((A.real-A.exp)*100)/100;return A}
+
+/* ===== OWNER: settings ===== */
+function viewSet(){
+  if(!draft)draft={products:S.products.map(p=>({...p})),removed:[]};
+  let h=`<div class="stack"><div class="card stack"><h2 style="font-size:1.15rem">Produits et prix</h2>
+  <div class="hint">Les livreurs ne voient jamais les prix. Modifier un prix ne change pas les tournées déjà lancées.</div>`;
+  draft.products.forEach((p,i)=>{h+=`<div class="stack" style="gap:6px;border-top:1px solid var(--line);padding-top:10px">
+    <div class="setrow"><input type="text" id="pn_${i}" data-pf="name" data-i="${i}" value="${esc(p.name)}" placeholder="Nom" aria-label="Nom du produit">
+    <div class="money"><input type="number" inputmode="decimal" step="0.1" min="0" id="pp_${i}" data-pf="price" data-i="${i}" value="${esc(p.price)}" aria-label="Prix"></div>
+    <button class="icon-btn" data-act="delprod" data-i="${i}" aria-label="Supprimer">✕</button></div>
+    <select id="pc_${i}" data-pf="cat" data-i="${i}" aria-label="Catégorie">${CATS.map(c=>`<option ${p.cat===c?"selected":""}>${c}</option>`).join("")}</select></div>`});
+  h+=`<button class="btn btn-ghost" data-act="addprod">+ Ajouter un produit</button><button class="btn btn-main" data-act="saveprods">Enregistrer les produits</button></div>
+  <div class="card stack"><h2 style="font-size:1.15rem">Livreurs</h2>
+  <div class="hint">Chaque livreur se connecte avec son identifiant et son mot de passe. Donne-les-lui de vive voix.</div>`;
+  for(const d of S.drivers){h+=`<div class="stack" style="gap:8px;border-top:1px solid var(--line);padding-top:10px">
+    <div class="row between"><div><b>${esc(d.name)}</b><div class="meta">Identifiant : <span class="num">${esc(d.username||"?")}</span></div></div>${d.active?`<span class="pill ok">Actif</span>`:`<span class="pill bad">Bloqué</span>`}</div>
+    <div class="row"><button class="btn btn-ghost btn-sm" data-act="drvpw" data-id="${d.id}">Changer le mot de passe</button><button class="btn ${d.active?"btn-danger":"btn-ghost"} btn-sm" data-act="drvtoggle" data-id="${d.id}">${d.active?"Bloquer":"Débloquer"}</button></div>
+    <div id="pwbox_${d.id}"></div></div>`}
+  h+=`<div class="stack" style="gap:8px;border-top:1px solid var(--line);padding-top:12px"><b>Ajouter un livreur</b>
+    <label class="field">Prénom<input type="text" id="ndName" placeholder="Ex : Houwari"></label>
+    <label class="field">Identifiant<input type="text" id="ndUser" autocapitalize="none" autocorrect="off" placeholder="Ex : houwari"><span class="hint">Lettres et chiffres seulement, sans espace.</span></label>
+    <label class="field">Mot de passe<input type="text" id="ndPw" autocapitalize="none" autocorrect="off" placeholder="6 caractères minimum"></label>
+    <button class="btn btn-dark" data-act="adddriver">Créer le compte livreur</button></div></div>
+  <div class="card stack"><h2 style="font-size:1.15rem">Installer l'app</h2>
+  <div class="hint"><b>iPhone</b> : dans Safari, bouton Partager puis « Sur l'écran d'accueil ».<br><b>Android</b> : dans Chrome, menu ⋮ puis « Installer l'application » ou « Ajouter à l'écran d'accueil ».</div>
+  <div class="hint">Lien à donner aux livreurs : <span class="num" style="user-select:all">${esc(location.href.split("#")[0])}</span></div></div></div>`;
+  return h;
+}
+
+/* ===== DRIVER ===== */
+function viewDriver(){
+  const open=S.trips.find(t=>t.status==="open");
+  const decl=S.trips.find(t=>t.status==="declared");
+  if(!open&&decl)return`<div class="empty" style="margin-top:20px"><strong>Déclaration envoyée</strong>Envoyée à ${fmtTime(decl.declared_at)}. Le patron va vérifier le stock et l'argent.</div>`;
+  if(!open)return`<div class="empty" style="margin-top:20px"><strong>Pas de tournée en cours</strong>Ta tournée apparaîtra ici dès que le patron la lance.<div style="margin-top:12px"><button class="btn btn-ghost btn-sm" data-act="refresh">Actualiser</button></div></div>`;
+  const ords=S.orders.filter(o=>o.trip_id===open.id&&o.status!=="cancelled");
+  const todo=ords.filter(o=>o.status!=="delivered"),done=ords.filter(o=>o.status==="delivered");
+  let h=`<div class="stack"><div class="card stack" style="gap:8px"><div class="row between"><h3>Ta tournée</h3><span class="pill road">En cours</span></div>
+    <div class="meta">Départ à ${fmtTime(open.started_at)} · fond de caisse ${eur(open.fond)}</div>
+    <div class="chips">${(open.items||[]).filter(i=>int(i.out)).map(i=>`<span class="chip"><b class="num">${int(i.out)}</b> ${esc(i.name)}</span>`).join("")}</div></div>
+    <div class="row between"><span class="eyebrow">Adresses à livrer</span><span class="eyebrow">${todo.length}</span></div>`;
+  if(!todo.length)h+=`<div class="empty">Aucune adresse en attente. Les nouvelles adresses du patron apparaissent ici.</div>`;
+  for(const o of todo){const maps="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(o.address);
+    h+=`<div class="order stack ${o.status==="sent"?"new":""}" style="gap:8px">
+      <div class="row between"><span class="eyebrow">Reçue à ${fmtTime(o.created_at)}</span>${orderPill(o)}</div>
+      <div class="addr">${esc(o.address)}</div>
+      ${o.note?`<div class="meta">${esc(o.note)}</div>`:""}
+      ${o.phone?`<div class="meta">Tél : <span class="num" style="user-select:all">${esc(o.phone)}</span></div>`:""}
+      <div class="row"><a class="btn btn-ghost btn-sm" style="flex:1" href="${esc(maps)}" target="_blank" rel="noopener">Itinéraire</a>${o.phone?`<a class="btn btn-ghost btn-sm" style="flex:1" href="tel:${esc(o.phone.replace(/[^\d+]/g,""))}">Appeler</a>`:""}</div>
+      ${o.status==="sent"?`<button class="btn btn-dark" data-act="seen" data-id="${o.id}">Vu, j'y vais</button>`:`<button class="btn btn-main" data-act="deliver" data-id="${o.id}">Livré</button>`}
+      <div id="dl_${o.id}"></div></div>`}
+  if(done.length){h+=`<div class="eyebrow">Livrées</div><div class="card">${done.map(o=>`<div class="mini"><span>${esc(o.address)}</span><span class="num">${eur(o.amount)} ${o.pay==="card"?"CB":"esp."}</span></div>`).join("")}</div>`}
+  h+=`<div style="height:6px"></div><button class="btn btn-main" data-act="declare" data-id="${open.id}">Terminer ma journée</button></div>`;
+  return h;
+}
+
+/* ---------- sheets ---------- */
+function openSheet(html){sheet.innerHTML=html;sheet.hidden=false;sheet.scrollTop=0;document.body.style.overflow="hidden"}
+function closeSheet(){sheet.hidden=true;sheet.innerHTML="";form=null;document.body.style.overflow=""}
+const backBtn=`<button class="back" data-act="close" aria-label="Retour"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>`;
+const head=t=>`<div class="wrap"><div class="sheet-head">${backBtn}<h2>${esc(t)}</h2></div>`;
+const stepper=(k,pid,val,label)=>`<div class="step"><button data-step="-1" data-pid="${esc(pid)}" data-k="${k}" aria-label="Moins">−</button><input type="number" inputmode="numeric" min="0" id="${k}_${esc(pid)}" data-q="${k}" data-pid="${esc(pid)}" value="${val||""}" placeholder="0" aria-label="${esc(label)}"><button data-step="1" data-pid="${esc(pid)}" data-k="${k}" aria-label="Plus">+</button></div>`;
+const moneyField=(id,label,val,hint)=>`<label class="field">${label}<div class="money"><input type="number" inputmode="decimal" step="0.1" min="0" id="${id}" data-m="${id}" value="${esc(val)}" placeholder="0"></div>${hint?`<span class="hint">${hint}</span>`:""}</label>`;
+
+/* owner: depart */
+function openDepart(){
+  const busy=new Set(S.trips.filter(t=>t.status!=="closed").map(t=>t.driver_id));
+  const avail=S.drivers.filter(d=>d.active&&!busy.has(d.id));
+  if(!avail.length){toast("Tous les livreurs actifs ont déjà une tournée en cours.");return}
+  form={type:"depart",driver:avail[0].id,fond:"",sumup_start:"",out:{}};
+  const g={};for(const p of S.products)(g[p.cat]=g[p.cat]||[]).push(p);
+  let h=head("Nouveau départ")+`<div class="stack">
+    <div><span class="eyebrow">Livreur</span><div class="seg" style="margin-top:6px">${S.drivers.filter(d=>d.active).map(d=>`<button data-drv="${d.id}" aria-pressed="${form.driver===d.id}" ${busy.has(d.id)?"disabled":""}>${esc(d.name)}${busy.has(d.id)?" · en route":""}</button>`).join("")}</div></div>
+    ${moneyField("fond","Fond de caisse (monnaie donnée)","")}
+    ${moneyField("sumup_start","Total SumUp du jour au départ","","Ce que SumUp affiche déjà aujourd'hui sur le compte du livreur. Mets 0 s'il n'y a rien.")}
+    <span class="eyebrow">Stock donné</span><div class="plist">`;
+  for(const c of CATS.filter(c=>g[c])){h+=`<div class="pcat eyebrow">${esc(c)}</div>`;
+    for(const p of g[c])h+=`<div class="prow"><div class="pn">${esc(p.name)}<div class="ps num">${eur(p.price)}</div></div>${stepper("out",p.id,0,p.name)}</div>`}
+  h+=`</div><div class="hint" id="depTotal"></div><button class="btn btn-main" data-act="savedepart">Lancer la tournée</button></div></div>`;
+  openSheet(h);updDep();
+}
+function updDep(){const el=$("#depTotal");if(!el)return;let n=0,v=0;for(const p of S.products){const q=int(form.out[p.id]);n+=q;v+=q*num(p.price)}el.innerHTML=`Total : <b class="num">${n}</b> articles · valeur <b class="num">${eur(v)}</b>`}
+async function saveDepart(btn){
+  const d=S.drivers.find(x=>x.id===form.driver);if(!d)return toast("Choisis un livreur.");
+  const items=[],prices={};
+  for(const p of S.products){const q=int(form.out[p.id]);if(q>0){items.push({pid:p.id,name:p.name,out:q});prices[p.id]=num(p.price)}}
+  if(!items.length)return toast("Ajoute au moins un produit.");
+  btn.disabled=true;
+  const id=uuid();
+  const r=await sb.from("trips").insert({id,driver_id:d.id,driver_name:d.name,day:dayKey(Date.now()),fond:num(form.fond),sumup_start:num(form.sumup_start),items});
+  if(r.error){btn.disabled=false;return toast(errMsg(r.error))}
+  const r2=await sb.from("trip_prices").insert({trip_id:id,prices});
+  if(r2.error)toast("Tournée lancée, mais les prix n'ont pas été enregistrés : "+errMsg(r2.error));else toast("Tournée lancée pour "+d.name);
+  closeSheet();tab="live";reload();
+}
+
+/* owner: order */
+function openOrder(tid){const t=S.trips.find(x=>x.id===tid);if(!t)return;form={type:"order",tid};
+  openSheet(head("Adresse pour "+t.driver_name)+`<div class="stack">
+    <label class="field">Adresse<textarea id="oAddr" placeholder="Ex : 12 rue Serpenoise, Metz"></textarea></label>
+    <label class="field">Téléphone du client (facultatif)<input type="tel" id="oPhone" inputmode="tel"></label>
+    <label class="field">Remarque (facultatif)<input type="text" id="oNote" placeholder="Ex : 2e étage, sonner chez Martin"></label>
+    <button class="btn btn-main" data-act="sendorder">Envoyer au livreur</button></div></div>`);
+  setTimeout(()=>{const a=$("#oAddr");a&&a.focus()},100)}
+async function sendOrder(btn){
+  const t=S.trips.find(x=>x.id===form.tid);const address=$("#oAddr").value.trim();
+  if(!address)return toast("Écris l'adresse.");btn.disabled=true;
+  const r=await sb.from("orders").insert({trip_id:t.id,driver_id:t.driver_id,address,phone:$("#oPhone").value.trim()||null,note:$("#oNote").value.trim()||null});
+  if(r.error){btn.disabled=false;return toast(errMsg(r.error))}
+  toast("Adresse envoyée à "+t.driver_name);closeSheet();reload();
+}
+
+/* owner: trip detail (open) */
+function openDetail(tid){const t=S.trips.find(x=>x.id===tid);if(!t)return;form={type:"detail",tid,redraw:()=>openDetail(tid)};
+  const ords=S.orders.filter(o=>o.trip_id===tid);
+  openSheet(head("Tournée de "+t.driver_name)+`<div class="stack">
+    <div class="meta">Parti à ${fmtTime(t.started_at)} · fond ${eur(t.fond)} · SumUp départ ${eur(t.sumup_start)}</div>
+    <div class="chips">${(t.items||[]).map(i=>`<span class="chip"><b class="num">${int(i.out)}</b> ${esc(i.name)}</span>`).join("")}</div>
+    <div class="eyebrow">Adresses</div>
+    ${ords.length?ords.map(o=>`<div class="order stack" style="gap:6px"><div class="row between"><span class="eyebrow">Envoyée à ${fmtTime(o.created_at)}</span>${orderPill(o)}</div><div class="addr">${esc(o.address)}</div>
+      <div class="meta">${o.seen_at?"Vue à "+fmtTime(o.seen_at):"Pas encore vue"}${o.delivered_at?" · livrée à "+fmtTime(o.delivered_at):""}</div>
+      ${o.status==="sent"||o.status==="seen"?`<button class="btn btn-ghost btn-sm" data-act="cancelorder" data-id="${o.id}">Annuler cette adresse</button>`:""}</div>`).join(""):`<div class="empty">Aucune adresse envoyée.</div>`}
+    <button class="btn btn-main" data-act="order" data-id="${t.id}">+ Envoyer une adresse</button>
+    <div class="card stack"><b>Le livreur ne peut pas faire sa déclaration ?</b><div class="hint">Tu peux faire le retour toi-même (téléphone en panne, oubli…).</div><button class="btn btn-ghost btn-sm" data-act="validate" data-id="${t.id}">Faire le retour moi-même</button></div>
+    <div id="delZone"><button class="btn btn-ghost btn-sm" data-act="askdel">Supprimer cette tournée</button></div></div></div>`)}
+
+/* driver: deliver inline */
+function openDeliverInline(oid){
+  const box=document.getElementById("dl_"+oid);if(!box)return;
+  form={type:"deliver",oid,pay:""};
+  box.innerHTML=`<div class="card stack" style="gap:10px;margin-top:4px">
+    ${moneyField("amt_"+oid,"Montant encaissé","")}
+    <div><span class="eyebrow">Paiement</span><div class="seg" style="margin-top:6px"><button data-pay="cash" aria-pressed="false">Espèces</button><button data-pay="card" aria-pressed="false">Carte (SumUp)</button></div></div>
+    <button class="btn btn-main" data-act="confirmdeliver" data-id="${oid}">Confirmer la livraison</button>
+    <button class="btn btn-ghost btn-sm" data-act="canceldeliver">Annuler</button></div>`;}
+
+/* driver: declaration */
+function openDeclare(tid){
+  const t=S.trips.find(x=>x.id===tid);if(!t)return;
+  form={type:"declare",tid,back:{},lost:{},perso:{},cash:"",sumup_mid:"",sumup_end:"",note:"",photo:null,confirm:false};
+  let h=head("Terminer ma journée")+`<div class="stack">
+    <span class="eyebrow">1 · Ce qui te reste</span><div class="plist">`;
+  for(const i of (t.items||[])){h+=`<div class="prow col"><div class="pn">${esc(i.name)}<div class="ps">Reçu au départ : <b class="num">${int(i.out)}</b></div></div>
+    <div class="stack" style="gap:6px">${[["back","Il me reste"],["lost","Perdu / offert"],["perso","Mangé / bu (perso)"]].map(([k,l])=>`<div class="line"><span class="lab">${l}</span>${stepper(k,i.pid,0,l+" "+i.name)}</div>`).join("")}
+    <div class="diff" id="over_${esc(i.pid)}"></div></div></div>`}
+  h+=`</div><span class="eyebrow">2 · L'argent</span>
+    ${moneyField("cash","Espèces que tu rends (tout, fond de caisse compris)","")}
+    ${moneyField("sumup_mid","SumUp avant minuit",""," Total SumUp de la journée du départ ("+fmtDay(t.day)+"). Si tu finis avant minuit, mets le total du jour ici.")}
+    ${moneyField("sumup_end","SumUp après minuit","","Total SumUp du lendemain. Laisse vide si tu as fini avant minuit.")}
+    <label class="field">Photo de l'écran SumUp (conseillé)<input type="file" id="photo" accept="image/*" capture="environment"><span class="hint" id="photoLbl">Prends en photo le total SumUp.</span></label>
+    <label class="field">Remarque (facultatif)<input type="text" id="note" data-m="note" placeholder="Ex : 1 burger tombé"></label>
+    <div id="sendZone"><button class="btn btn-main" data-act="askdeclare">Envoyer au patron</button></div></div></div>`;
+  openSheet(h);
+}
+function checkOver(){const t=S.trips.find(x=>x.id===form.tid);if(!t)return true;let ok=true;
+  for(const i of t.items||[]){const s=int(form.back[i.pid])+int(form.lost[i.pid])+int(form.perso[i.pid]);const el=document.getElementById("over_"+i.pid);
+    if(el)el.textContent=s>int(i.out)?"Tu as compté plus que ce que tu as reçu ("+int(i.out)+").":"";if(s>int(i.out))ok=false}return ok}
+async function sendDeclare(btn){
+  if(!checkOver())return toast("Vérifie les quantités en rouge.");
+  btn.disabled=true;btn.textContent="Envoi…";
+  let photo=null;
+  try{
+    if(form.photo){const f=form.photo;const ext=(f.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
+      const path=me.id+"/"+form.tid+"-"+Date.now()+"."+ext;
+      const up=await sb.storage.from("sumup").upload(path,f,{contentType:f.type||"image/jpeg"});
+      if(up.error)toast("La photo n'a pas pu être envoyée, la déclaration part sans photo.");else photo=path}
+    const clean=o=>{const r={};for(const k in o)if(int(o[k]))r[k]=int(o[k]);return r};
+    const d={back:clean(form.back),lost:clean(form.lost),perso:clean(form.perso),cash:num(form.cash),sumup_mid:num(form.sumup_mid),sumup_end:num(form.sumup_end),note:form.note||"",photo};
+    const r=await sb.rpc("driver_declare",{tid:form.tid,d});if(r.error)throw r.error;
+    toast("Déclaration envoyée");closeSheet();reload();
+  }catch(e){btn.disabled=false;btn.textContent="Envoyer au patron";toast(errMsg(e))}
+}
+
+/* owner: validate */
+async function openValidate(tid){
+  const t=S.trips.find(x=>x.id===tid);if(!t)return;
+  const d=t.decl||{};const has=!!t.decl;
+  form={type:"validate",tid,has,back:{...(d.back||{})},lost:{...(d.lost||{})},perso:{...(d.perso||{})},cash:has?String(d.cash??""):"",sumup_mid:has?String(d.sumup_mid??""):"",sumup_end:has?String(d.sumup_end??""):"",note:d.note||""};
+  let h=head(has?"Valider la tournée de "+t.driver_name:"Retour de "+t.driver_name)+`<div class="stack">
+    ${has?`<div class="hint">Les cases sont remplies avec ce que le livreur a déclaré. Recompte le stock et l'argent, corrige si besoin. Ce qui ne correspond pas apparaît en rouge.</div>`:`<div class="hint">Le livreur n'a rien déclaré : compte toi-même le stock et l'argent.</div>`}
+    <span class="eyebrow">1 · Stock compté</span><div class="plist">`;
+  for(const i of t.items||[]){h+=`<div class="prow col"><div class="row between"><div class="pn">${esc(i.name)}<div class="ps">Donné : <b class="num">${int(i.out)}</b></div></div><div class="ps" id="sold_${esc(i.pid)}"></div></div>
+    <div class="stack" style="gap:6px">${[["back","Reste"],["lost","Perdu / offert"],["perso","Conso perso"]].map(([k,l])=>`<div class="line"><span class="lab">${l}</span>${stepper(k,i.pid,int(form[k][i.pid]),l+" "+i.name)}</div><div class="diff" id="d_${k}_${esc(i.pid)}"></div>`).join("")}</div></div>`}
+  h+=`</div><span class="eyebrow">2 · Argent compté</span>
+    ${moneyField("cash","Espèces rendues (fond de caisse compris)",form.cash)}<div class="diff" id="d_cash"></div>
+    ${moneyField("sumup_mid","SumUp avant minuit",form.sumup_mid)}<div class="diff" id="d_sumup_mid"></div>
+    ${moneyField("sumup_end","SumUp après minuit",form.sumup_end)}<div class="diff" id="d_sumup_end"></div>
+    <div class="hint" id="cardCalc"></div>
+    ${d.photo?`<div class="stack" style="gap:6px"><span class="eyebrow">Photo SumUp du livreur</span><div id="photoBox" class="hint">Chargement de la photo…</div></div>`:has?`<div class="hint">Pas de photo SumUp envoyée.</div>`:""}
+    ${d.note?`<div class="card"><span class="eyebrow">Remarque du livreur</span><div>${esc(d.note)}</div></div>`:""}
+    <span class="eyebrow">3 · Résultat</span><div id="live"></div>
+    <button class="btn btn-main" data-act="savevalidate">Valider et clôturer</button></div></div>`;
+  openSheet(h);updValidate();
+  if(d.photo){const r=await sb.storage.from("sumup").createSignedUrl(d.photo,3600);const b=$("#photoBox");if(b)b.innerHTML=r.error?"La photo n'a pas pu être chargée.":`<img class="photo" src="${esc(r.data.signedUrl)}" alt="Écran SumUp envoyé par le livreur">`}
+}
+function updValidate(){
+  const t=S.trips.find(x=>x.id===form.tid);if(!t)return;const d=t.decl||{};
+  const src={back:form.back,lost:form.lost,perso:form.perso,cash:num(form.cash),sumup_mid:num(form.sumup_mid),sumup_end:num(form.sumup_end)};
+  const c=calc(t,src);
+  for(const l of c.lines){const el=document.getElementById("sold_"+l.pid);if(el)el.innerHTML=l.sold<0?`<span class="warn">Trop compté</span>`:`Vendu <b class="num">${l.sold}</b>`;
+    if(form.has)for(const k of ["back","lost","perso"]){const e2=document.getElementById("d_"+k+"_"+l.pid);if(!e2)continue;const dv=int((d[k]||{})[l.pid]);e2.textContent=int(form[k][l.pid])!==dv?"Le livreur a déclaré "+dv:""}}
+  if(form.has)for(const k of ["cash","sumup_mid","sumup_end"]){const e2=$("#d_"+k);if(e2)e2.textContent=Math.abs(num(form[k])-num(d[k]))>=0.01?"Le livreur a déclaré "+eur(d[k]):""}
+  const cc=$("#cardCalc");if(cc)cc.innerHTML=`Carte de la tournée : (<span class="num">${eur(src.sumup_mid)}</span> − <span class="num">${eur(t.sumup_start)}</span> au départ) + <span class="num">${eur(src.sumup_end)}</span> = <b class="num">${eur(c.card)}</b>`;
+  const lv=$("#live");if(lv)lv.innerHTML=receiptHTML(t,c,src);
+}
+async function saveValidate(btn){
+  const t=S.trips.find(x=>x.id===form.tid);
+  const src={back:form.back,lost:form.lost,perso:form.perso};const c=calc(t,src);
+  if(c.bad)return toast("Un produit a plus de retours que de stock donné.");
+  const clean=o=>{const r={};for(const k in o)if(int(o[k]))r[k]=int(o[k]);return r};
+  const final={back:clean(form.back),lost:clean(form.lost),perso:clean(form.perso),cash:num(form.cash),sumup_mid:num(form.sumup_mid),sumup_end:num(form.sumup_end),note:form.note||""};
+  btn.disabled=true;
+  const r=await sb.from("trips").update({final,status:"closed",closed_at:new Date().toISOString()}).eq("id",t.id);
+  if(r.error){btn.disabled=false;return toast(errMsg(r.error))}
+  toast("Tournée clôturée");const id=t.id;closeSheet();await reload();openTicket(id);
+}
+
+/* receipt + ticket */
+function receiptHTML(t,c,src){
+  src=src||counts(t);const v=verdict(c.ecart);
+  return`<div class="receipt"><h3>${esc(t.driver_name)}</h3><div class="c">${fmtDay(t.day)} · ${fmtTime(t.started_at)}${t.closed_at?" → "+fmtTime(t.closed_at):""}</div><div class="cut"></div>
+  ${c.lines.map(l=>`<div class="rl"><span>${l.sold} × ${esc(l.name)}</span><span>${eur(l.val)}</span></div>${l.lost?`<div class="rl small"><span>&nbsp;&nbsp;+ ${l.lost} perdu/offert</span><span>${eur(l.lost*l.price)}</span></div>`:""}${l.perso?`<div class="rl small"><span>&nbsp;&nbsp;+ ${l.perso} conso perso</span><span>${eur(l.perso*l.price)}</span></div>`:""}`).join("")}
+  <div class="cut"></div><div class="rl strong"><span>Ventes attendues</span><span>${eur(c.expected)}</span></div><div class="cut"></div>
+  <div class="rl"><span>Espèces rendues</span><span>${eur(src.cash)}</span></div>
+  <div class="rl"><span>− Fond de caisse</span><span>${eur(t.fond)}</span></div>
+  <div class="rl"><span>SumUp avant minuit</span><span>${eur(src.sumup_mid)}</span></div>
+  <div class="rl"><span>− SumUp au départ</span><span>${eur(t.sumup_start)}</span></div>
+  <div class="rl"><span>+ SumUp après minuit</span><span>${eur(src.sumup_end)}</span></div>
+  <div class="rl strong"><span>Argent réel</span><span>${eur(c.real)}</span></div>
+  ${c.dels?`<div class="cut"></div><div class="rl small"><span>dont ${c.dels} livraison${c.dels>1?"s":""} déclarée${c.dels>1?"s":""}</span><span>${eur(c.delTotal)}</span></div><div class="rl small"><span>&nbsp;&nbsp;espèces · carte</span><span>${eur(c.delCash)} · ${eur(c.delCard)}</span></div>`:""}
+  <div class="verdict ${v.cls}">${esc(v.txt)}<small>${esc(v.sub)}</small></div></div>`}
+function declDiffs(t){if(!t.decl||!t.final)return[];const out=[];const d=t.decl,f=t.final;
+  const L={back:"reste",lost:"perdu",perso:"perso"};
+  for(const i of t.items||[])for(const k of ["back","lost","perso"]){const a=int((d[k]||{})[i.pid]),b=int((f[k]||{})[i.pid]);if(a!==b)out.push(`${i.name} (${L[k]}) : déclaré ${a}, compté ${b}`)}
+  const M={cash:"Espèces",sumup_mid:"SumUp avant minuit",sumup_end:"SumUp après minuit"};
+  for(const k in M)if(Math.abs(num(d[k])-num(f[k]))>=0.01)out.push(`${M[k]} : déclaré ${eur(d[k])}, compté ${eur(f[k])}`);
+  return out}
+async function openTicket(tid){const t=S.trips.find(x=>x.id===tid);if(!t)return;const c=calc(t);form={type:"ticket",tid};
+  const diffs=declDiffs(t);const ords=S.orders.filter(o=>o.trip_id===tid&&o.status==="delivered");
+  openSheet(head("Bilan de tournée")+`<div class="stack">${receiptHTML(t,c)}
+    ${t.decl?(diffs.length?`<div class="card stack" style="gap:6px;border-color:var(--bad)"><b class="warn">Corrections par rapport à la déclaration du livreur</b>${diffs.map(x=>`<div class="meta">${esc(x)}</div>`).join("")}</div>`:`<div class="card"><span class="pill ok">Déclaration du livreur conforme à ton comptage</span></div>`):`<div class="hint">Retour fait par le patron, sans déclaration du livreur.</div>`}
+    ${ords.length?`<div class="card"><div class="eyebrow" style="margin-bottom:4px">Livraisons</div>${ords.map(o=>`<div class="mini"><span>${fmtTime(o.delivered_at)} · ${esc(o.address)}</span><span class="num">${eur(o.amount)} ${o.pay==="card"?"CB":"esp."}</span></div>`).join("")}</div>`:""}
+    ${t.decl&&t.decl.photo?`<div id="photoBox" class="hint">Chargement de la photo SumUp…</div>`:""}
+    <button class="btn btn-ghost" data-act="pdftrip">Télécharger ce bilan en PDF</button>
+    <div id="delZone"><button class="btn btn-ghost btn-sm" data-act="askdel">Supprimer cette tournée</button></div></div></div>`);
+  if(t.decl&&t.decl.photo){const r=await sb.storage.from("sumup").createSignedUrl(t.decl.photo,3600);const b=$("#photoBox");if(b)b.innerHTML=r.error?"":`<span class="eyebrow">Photo SumUp</span><img class="photo" src="${esc(r.data.signedUrl)}" alt="Écran SumUp">`}}
+
+/* ---------- PDF ---------- */
+const pe=n=>{const v=Math.round((+n||0)*100)/100;const s=Math.abs(v).toFixed(2).split(".");return(v<0?"-":"")+s[0].replace(/\B(?=(\d{3})+(?!\d))/g," ")+","+s[1]+" €"};
+const pdfDay=k=>new Date(k+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+const ecTxt=e=>Math.abs(e)<0.5?"Juste":(e<0?"Manque "+pe(-e):"Surplus "+pe(e));
+function periodLabel(){const now=new Date();
+  if(period==="day")return pdfDay(dayKey(now));
+  if(period==="yday"){const y=new Date();y.setDate(y.getDate()-1);return pdfDay(dayKey(y))}
+  if(period==="week"){const s=new Date();s.setDate(s.getDate()-6);return"du "+pdfDay(dayKey(s))+" au "+pdfDay(dayKey(now))}
+  if(period==="month")return now.toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+  return"toutes les tournées"}
+function buildPdf(list,title,sub){
+  const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:"mm",format:"a4"});
+  const W=doc.internal.pageSize.getWidth(),M=14,ink=[29,36,31],mus=[226,166,20],grey=[95,106,98];
+  const base={styles:{fontSize:8.5,cellPadding:1.8,lineColor:[220,220,210],lineWidth:.1,textColor:ink},headStyles:{fillColor:ink,textColor:255,fontStyle:"bold",fontSize:8.5},margin:{left:M,right:M},theme:"grid"};
+  const R={halign:"right"},C={halign:"center"};const colOf=e=>Math.abs(e)<.5?[31,122,74]:e<0?[194,50,31]:[29,95,154];
+  let y=M;doc.setFillColor(...mus);doc.rect(0,0,W,4,"F");
+  doc.setFont("helvetica","bold");doc.setFontSize(18);doc.setTextColor(...ink);doc.text(title,M,y+8);
+  doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(...grey);doc.text(sub,M,y+14);
+  doc.text("Édité le "+new Date().toLocaleString("fr-FR",{dateStyle:"long",timeStyle:"short"}),M,y+19);y+=26;
+  const A=agg(list);const col=colOf(A.ecart);
+  doc.setFillColor(...col);doc.roundedRect(M,y,W-2*M,12,2,2,"F");doc.setTextColor(255);doc.setFont("helvetica","bold");doc.setFontSize(13);
+  doc.text((Math.abs(A.ecart)<.5?"Caisse juste":ecTxt(A.ecart))+"  ·  "+list.length+" tournée"+(list.length>1?"s":""),M+4,y+8);y+=17;
+  doc.autoTable(Object.assign({},base,{startY:y,head:[["Résumé","Montant"]],body:[
+    ["Ventes attendues (stock vendu × prix)",pe(A.exp)],["Espèces encaissées (hors fond de caisse)",pe(A.cash)],["Carte SumUp",pe(A.card)],["Argent réel encaissé",pe(A.real)],["Écart (réel - attendu)",pe(A.ecart)],
+    ["Livraisons déclarées ("+A.dels+")",pe(A.delTotal)+"  (esp. "+pe(A.delCash)+" · CB "+pe(A.delCard)+")"],["Perdus / offerts (hors ventes)",pe(A.lost)],["Consommation personnel (hors ventes)",pe(A.perso)]],
+    columnStyles:{1:R},didParseCell:d=>{if(d.section==="body"&&d.row.index===4){d.cell.styles.fontStyle="bold";d.cell.styles.textColor=col}}}));
+  y=doc.lastAutoTable.finalY+8;
+  doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(...ink);doc.text("Par livreur",M,y);
+  doc.autoTable(Object.assign({},base,{startY:y+3,head:[["Livreur","Tourn.","Attendu","Espèces","Carte","Réel","Écart","Livraisons","Perdu","Perso"]],
+    body:Object.entries(A.by).map(([n,b])=>[n,b.n,pe(b.exp),pe(b.cash),pe(b.card),pe(b.real),pe(b.real-b.exp),pe(b.dels),pe(b.lost),pe(b.perso)]),
+    styles:Object.assign({},base.styles,{fontSize:7.5}),columnStyles:{1:C,2:R,3:R,4:R,5:R,6:R,7:R,8:R,9:R}}));
+  y=doc.lastAutoTable.finalY+8;
+  const bp={};for(const t of list)for(const l of calc(t).lines){const k=l.name+"|"+l.price;const p=bp[k]||(bp[k]={name:l.name,price:l.price,out:0,back:0,sold:0,lost:0,perso:0,val:0});p.out+=l.out;p.back+=l.back;p.sold+=l.sold;p.lost+=l.lost;p.perso+=l.perso;p.val+=l.val}
+  if(y>250){doc.addPage();y=M}
+  doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text("Par produit",M,y);
+  doc.autoTable(Object.assign({},base,{startY:y+3,head:[["Produit","Prix","Donné","Vendu","Retour","Perdu","Perso","Ventes"]],
+    body:Object.values(bp).sort((a,b)=>b.val-a.val).map(p=>[p.name,pe(p.price),p.out,p.sold,p.back,p.lost,p.perso,pe(p.val)]),
+    columnStyles:{1:R,2:C,3:C,4:C,5:C,6:C,7:R}}));
+  y=doc.lastAutoTable.finalY+10;
+  for(const t of list.slice().sort((a,b)=>new Date(a.started_at)-new Date(b.started_at))){
+    const c=calc(t),src=counts(t),vc=colOf(c.ecart);
+    if(y>225){doc.addPage();y=M}
+    doc.setFillColor(243,242,236);doc.rect(M,y-5,W-2*M,9,"F");doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(...ink);
+    doc.text(t.driver_name+"  ·  "+fmtDay(t.day)+"  ·  "+fmtTime(t.started_at)+(t.closed_at?" - "+fmtTime(t.closed_at):""),M+2,y+1);
+    doc.setTextColor(...vc);doc.text(ecTxt(c.ecart),W-M-2,y+1,{align:"right"});
+    doc.autoTable(Object.assign({},base,{startY:y+6,head:[["Produit","Prix","Donné","Retour","Perdu","Perso","Vendu","Ventes"]],
+      body:c.lines.map(l=>[l.name,pe(l.price),l.out,l.back,l.lost,l.perso,l.sold,pe(l.val)]),
+      foot:[["Total","","","","","","",pe(c.expected)]],footStyles:{fillColor:[251,239,200],textColor:ink,fontStyle:"bold",halign:"right"},
+      columnStyles:{1:R,2:C,3:C,4:C,5:C,6:C,7:R}}));
+    const money=[["Espèces rendues",pe(src.cash)],["- Fond de caisse",pe(t.fond)],["= Espèces nettes",pe(c.cashNet)],["SumUp avant minuit",pe(src.sumup_mid)],["- SumUp au départ",pe(t.sumup_start)],["+ SumUp après minuit",pe(src.sumup_end)],["= Carte tournée",pe(c.card)],["Argent réel",pe(c.real)],["Ventes attendues",pe(c.expected)],["Écart",pe(c.ecart)]];
+    doc.autoTable(Object.assign({},base,{startY:doc.lastAutoTable.finalY+2,body:money,tableWidth:90,columnStyles:{1:R},didParseCell:d=>{if(d.row.index===money.length-1){d.cell.styles.fontStyle="bold";d.cell.styles.textColor=vc}}}));
+    y=doc.lastAutoTable.finalY+3;
+    const ords=S.orders.filter(o=>o.trip_id===t.id&&o.status==="delivered");
+    if(ords.length){doc.autoTable(Object.assign({},base,{startY:y,head:[["Livraison","Heure","Paiement","Montant"]],body:ords.map(o=>[o.address,fmtTime(o.delivered_at),o.pay==="card"?"Carte":"Espèces",pe(o.amount)]),columnStyles:{1:C,2:C,3:R}}));y=doc.lastAutoTable.finalY+3}
+    const diffs=declDiffs(t);doc.setFont("helvetica","italic");doc.setFontSize(9);
+    if(t.decl){if(diffs.length){doc.setTextColor(194,50,31);const ln=doc.splitTextToSize("Corrections : "+diffs.join(" ; "),W-2*M);doc.text(ln,M,y+3);y+=ln.length*4+2}else{doc.setTextColor(...grey);doc.text("Déclaration du livreur conforme au comptage.",M,y+3);y+=5}}
+    else{doc.setTextColor(...grey);doc.text("Retour fait par le patron.",M,y+3);y+=5}
+    const note=(t.decl&&t.decl.note)||"";if(note){doc.setTextColor(...grey);const ln=doc.splitTextToSize("Remarque : "+note,W-2*M);doc.text(ln,M,y+3);y+=ln.length*4+2}
+    y+=9;
+  }
+  const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(...grey);doc.text("Caisse Livreurs  ·  page "+i+"/"+n,W/2,doc.internal.pageSize.getHeight()-8,{align:"center"})}
+  return doc}
+function downloadPdf(list,title,sub,fname){
+  if(!window.jspdf)return toast("Le PDF n'a pas pu se préparer. Vérifie ta connexion.");
+  if(!list.length)return toast("Aucune tournée à mettre dans le PDF.");
+  try{buildPdf(list,title,sub).save(fname)}catch(e){toast("Le PDF n'a pas pu être créé.")}}
+
+/* ---------- events ---------- */
+document.addEventListener("click",async e=>{
+  const tb=e.target.closest("nav.tabs button");if(tb){tab=tb.dataset.tab;if(tab!=="set")draft=null;render();window.scrollTo(0,0);return}
+  const go=e.target.closest("[data-tab-go]");if(go){tab=go.dataset.tabGo;render();return}
+  const pb=e.target.closest("[data-period]");if(pb){period=pb.dataset.period;render();return}
+  const db=e.target.closest("[data-drv]");if(db&&form){form.driver=db.dataset.drv;document.querySelectorAll("[data-drv]").forEach(b=>b.setAttribute("aria-pressed",b===db));return}
+  const py=e.target.closest("[data-pay]");if(py&&form){form.pay=py.dataset.pay;py.parentElement.querySelectorAll("[data-pay]").forEach(b=>b.setAttribute("aria-pressed",b===py));return}
+  const st=e.target.closest("[data-step]");if(st&&form){const k=st.dataset.k,p=st.dataset.pid;const v=Math.max(0,int(form[k][p])+parseInt(st.dataset.step));form[k][p]=v;const inp=document.getElementById(k+"_"+p);if(inp)inp.value=v||"";afterQty();return}
+  const a=e.target.closest("[data-act]");if(!a)return;const act=a.dataset.act,id=a.dataset.id;
+  switch(act){
+    case "logout":await sb.auth.signOut();me=null;cleanup();showLogin();break;
+    case "showsignup":showLogin(true);break;
+    case "showlogin":showLogin(false);break;
+    case "refresh":reload();break;
+    case "close":closeSheet();reload();break;
+    case "depart":openDepart();break;
+    case "savedepart":saveDepart(a);break;
+    case "order":openOrder(id);break;
+    case "sendorder":sendOrder(a);break;
+    case "detail":openDetail(id);break;
+    case "cancelorder":{const r=await sb.from("orders").update({status:"cancelled"}).eq("id",id);if(r.error)toast(errMsg(r.error));else{toast("Adresse annulée");await reload();if(form&&form.type==="detail")openDetail(form.tid)}break}
+    case "validate":openValidate(id);break;
+    case "savevalidate":saveValidate(a);break;
+    case "ticket":openTicket(id);break;
+    case "askdel":$("#delZone").innerHTML=`<div class="card stack"><b>Supprimer définitivement cette tournée et ses adresses ?</b><div class="row"><button class="btn btn-danger btn-sm" data-act="dodel">Oui, supprimer</button><button class="btn btn-ghost btn-sm" data-act="nodel">Annuler</button></div></div>`;break;
+    case "nodel":$("#delZone").innerHTML=`<button class="btn btn-ghost btn-sm" data-act="askdel">Supprimer cette tournée</button>`;break;
+    case "dodel":{const r=await sb.from("trips").delete().eq("id",form.tid);if(r.error)toast(errMsg(r.error));else{toast("Tournée supprimée");closeSheet();reload()}break}
+    case "pdfperiod":{const list=S.trips.filter(t=>t.status==="closed"&&inPeriod(t));downloadPdf(list,"Bilan des livreurs",periodLabel(),"bilan-livreurs-"+dayKey(Date.now())+"-"+period+".pdf");break}
+    case "pdftrip":{const t=S.trips.find(x=>x.id===form.tid);if(t)downloadPdf([t],"Bilan de tournée",t.driver_name+" · "+pdfDay(t.day),"tournee-"+t.driver_name.replace(/[^\w-]+/g,"_")+"-"+t.day+".pdf");break}
+    case "addprod":draft.products.push({id:uuid(),name:"",price:"",cat:"Tacos",sort:draft.products.length+1,_new:true});render();break;
+    case "delprod":{const p=draft.products.splice(+a.dataset.i,1)[0];if(p&&!p._new)draft.removed.push(p.id);render();break}
+    case "saveprods":{a.disabled=true;const rows=draft.products.filter(p=>p.name.trim()).map((p,i)=>({id:p.id,name:p.name.trim(),price:num(p.price),cat:p.cat||"Autre",sort:i+1,active:true}));
+      const r=await sb.from("products").upsert(rows);let err=r.error;
+      if(!err&&draft.removed.length){const r2=await sb.from("products").delete().in("id",draft.removed);err=r2.error}
+      if(err){a.disabled=false;toast(errMsg(err))}else{toast("Produits enregistrés");draft=null;reload()}break}
+    case "adddriver":addDriver(a);break;
+    case "drvtoggle":{const d=S.drivers.find(x=>x.id===id);const r=await sb.rpc("owner_set_driver",{uid:d.id,n:d.name,u:d.username,act:!d.active});if(r.error)toast(errMsg(r.error));else{toast(d.active?d.name+" est bloqué":d.name+" est débloqué");reload()}break}
+    case "drvpw":{const box=document.getElementById("pwbox_"+id);box.innerHTML=`<div class="row" style="flex-wrap:nowrap"><input type="text" id="npw_${id}" autocapitalize="none" placeholder="Nouveau mot de passe"><button class="btn btn-dark btn-sm" data-act="setpw" data-id="${id}">OK</button></div>`;break}
+    case "setpw":{const pw=document.getElementById("npw_"+id).value;if(pw.length<6)return toast("6 caractères minimum.");const r=await sb.rpc("owner_set_password",{uid:id,pw});if(r.error)toast(errMsg(r.error));else{toast("Mot de passe changé");document.getElementById("pwbox_"+id).innerHTML=""}break}
+    case "seen":{a.disabled=true;const r=await sb.rpc("order_seen",{oid:id});if(r.error){a.disabled=false;toast(errMsg(r.error))}else reload();break}
+    case "deliver":openDeliverInline(id);{const x=document.getElementById("amt_"+id);x&&x.focus()}break;
+    case "canceldeliver":form=null;render();break;
+    case "confirmdeliver":{const amt=num(document.getElementById("amt_"+id).value);if(!amt)return toast("Écris le montant encaissé.");if(!form||!form.pay)return toast("Choisis espèces ou carte.");
+      a.disabled=true;const r=await sb.rpc("order_delivered",{oid:id,amt,p:form.pay});if(r.error){a.disabled=false;toast(errMsg(r.error))}else{toast("Livraison enregistrée");form=null;reload()}break}
+    case "declare":openDeclare(id);break;
+    case "askdeclare":if(!checkOver())return toast("Vérifie les quantités en rouge.");$("#sendZone").innerHTML=`<div class="card stack"><b>Envoyer ta déclaration ?</b><div class="hint">Tu ne pourras plus la modifier après.</div><button class="btn btn-main" data-act="dodeclare">Oui, envoyer</button><button class="btn btn-ghost btn-sm" data-act="nodeclare">Revenir</button></div>`;break;
+    case "nodeclare":$("#sendZone").innerHTML=`<button class="btn btn-main" data-act="askdeclare">Envoyer au patron</button>`;break;
+    case "dodeclare":sendDeclare(a);break;
+  }
+});
+function afterQty(){if(!form)return;if(form.type==="depart")updDep();else if(form.type==="validate")updValidate();else if(form.type==="declare")checkOver()}
+document.addEventListener("input",e=>{const t=e.target;
+  if(t.dataset.q&&form){form[t.dataset.q][t.dataset.pid]=int(t.value);afterQty();return}
+  if(t.dataset.m&&form){form[t.dataset.m]=t.value;if(form.type==="validate")updValidate();return}
+  if(t.dataset.pf&&draft){draft.products[+t.dataset.i][t.dataset.pf]=t.value}});
+document.addEventListener("change",e=>{const t=e.target;
+  if(t.dataset.pf&&draft)draft.products[+t.dataset.i][t.dataset.pf]=t.value;
+  if(t.id==="photo"&&form){form.photo=t.files&&t.files[0]||null;const l=$("#photoLbl");if(l)l.textContent=form.photo?"Photo prête ✓":"Prends en photo le total SumUp."}});
+
+async function addDriver(btn){
+  const name=$("#ndName").value.trim(),user=$("#ndUser").value.trim().toLowerCase(),pw=$("#ndPw").value;
+  if(!name)return toast("Écris le prénom.");if(!/^[a-z0-9._-]{3,30}$/.test(user))return toast("Identifiant : 3 lettres ou chiffres minimum, sans espace.");if(pw.length<6)return toast("Mot de passe : 6 caractères minimum.");
+  btn.disabled=true;
+  try{
+    const tmp=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:"tmp-signup"}});
+    const {data,error}=await tmp.auth.signUp({email:toEmail(user),password:pw,options:{data:{name}}});
+    if(error)throw error;if(!data.user)throw new Error("Compte non créé.");
+    await new Promise(r=>setTimeout(r,600));
+    const r=await sb.rpc("owner_set_driver",{uid:data.user.id,n:name,u:user,act:true});if(r.error)throw r.error;
+    toast("Compte créé pour "+name);reload();
+  }catch(e){btn.disabled=false;toast(/duplicate|unique/i.test(e.message||"")?"Cet identifiant est déjà pris.":errMsg(e))}
+}
+
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+boot();
+})();
+</script>
+</body>
+</html>
